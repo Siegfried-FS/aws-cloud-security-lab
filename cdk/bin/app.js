@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+require("source-map-support/register");
+const cdk = require("aws-cdk-lib");
+const cloud_security_stack_1 = require("../lib/cloud-security-stack");
+const app = new cdk.App();
+new cloud_security_stack_1.CloudSecurityStack(app, 'CloudSecurityMasterclassStack', {
+    env: {
+        account: process.env.CDK_DEFAULT_ACCOUNT,
+        region: process.env.CDK_DEFAULT_REGION || 'us-east-1',
+    },
+    description: 'AWS CDK Stack para AWS Cloud Security Lab (IAM, Security Groups, S3 y CloudTrail)',
+});
+app.synth();
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYXBwLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiYXBwLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7OztBQUNBLHVDQUFxQztBQUNyQyxtQ0FBbUM7QUFDbkMsc0VBQWlFO0FBRWpFLE1BQU0sR0FBRyxHQUFHLElBQUksR0FBRyxDQUFDLEdBQUcsRUFBRSxDQUFDO0FBRTFCLElBQUkseUNBQWtCLENBQUMsR0FBRyxFQUFFLCtCQUErQixFQUFFO0lBQzNELEdBQUcsRUFBRTtRQUNILE9BQU8sRUFBRSxPQUFPLENBQUMsR0FBRyxDQUFDLG1CQUFtQjtRQUN4QyxNQUFNLEVBQUUsT0FBTyxDQUFDLEdBQUcsQ0FBQyxrQkFBa0IsSUFBSSxXQUFXO0tBQ3REO0lBQ0QsV0FBVyxFQUFFLG1GQUFtRjtDQUNqRyxDQUFDLENBQUM7QUFFSCxHQUFHLENBQUMsS0FBSyxFQUFFLENBQUMiLCJzb3VyY2VzQ29udGVudCI6WyIjIS91c3IvYmluL2VudiBub2RlXG5pbXBvcnQgJ3NvdXJjZS1tYXAtc3VwcG9ydC9yZWdpc3Rlcic7XG5pbXBvcnQgKiBhcyBjZGsgZnJvbSAnYXdzLWNkay1saWInO1xuaW1wb3J0IHsgQ2xvdWRTZWN1cml0eVN0YWNrIH0gZnJvbSAnLi4vbGliL2Nsb3VkLXNlY3VyaXR5LXN0YWNrJztcblxuY29uc3QgYXBwID0gbmV3IGNkay5BcHAoKTtcblxubmV3IENsb3VkU2VjdXJpdHlTdGFjayhhcHAsICdDbG91ZFNlY3VyaXR5TWFzdGVyY2xhc3NTdGFjaycsIHtcbiAgZW52OiB7XG4gICAgYWNjb3VudDogcHJvY2Vzcy5lbnYuQ0RLX0RFRkFVTFRfQUNDT1VOVCxcbiAgICByZWdpb246IHByb2Nlc3MuZW52LkNES19ERUZBVUxUX1JFR0lPTiB8fCAndXMtZWFzdC0xJyxcbiAgfSxcbiAgZGVzY3JpcHRpb246ICdBV1MgQ0RLIFN0YWNrIHBhcmEgQVdTIENsb3VkIFNlY3VyaXR5IExhYiAoSUFNLCBTZWN1cml0eSBHcm91cHMsIFMzIHkgQ2xvdWRUcmFpbCknLFxufSk7XG5cbmFwcC5zeW50aCgpO1xuIl19

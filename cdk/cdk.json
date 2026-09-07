@@ -1,0 +1,23 @@
+{
+  "app": "node bin/app.js",
+  "watch": {
+    "include": ["**"],
+    "exclude": [
+      "README.md",
+      "cdk*.json",
+      "**/*.d.ts",
+      "**/*.js",
+      "tsconfig.json",
+      "package*.json",
+      "node_modules",
+      "test"
+    ]
+  },
+  "context": {
+    "communityName": "Comunidad de Tecnología & Cloud",
+    "speakerMeetupUrl": "https://www.meetup.com/aws-user-group-playa-vicente/",
+    "unamMeetupUrl": "https://www.meetup.com/aws-sbg-at-unam/",
+    "enableHttp": true,
+    "enableS3": true
+  }
+}

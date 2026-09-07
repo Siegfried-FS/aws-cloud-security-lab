@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+export NODE_NO_WARNINGS=1
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+  source "$HOME/.nvm/nvm.sh"
+  nvm use default &>/dev/null || true
+fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+python3 "${SCRIPT_DIR}/scripts/cloudsec_wizard.py" "$@"

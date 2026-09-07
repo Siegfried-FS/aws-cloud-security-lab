@@ -1,0 +1,49 @@
+# AWS Cloud Security Masterclass · .gitignore
+
+# Node & CDK
+cdk/node_modules/
+node_modules/
+cdk/cdk.out/
+cdk.out/
+cdk/outputs.json
+outputs.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Configuración y estado de demos locales temporales
+presentacion/demo-config.json
+demo-config.json
+*.log
+
+# Entorno y credenciales locales (por seguridad)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Material de trabajo personal, presentaciones y notas internas
+presentacion/
+eventos/
+flujodetrabajo/
+ARQUITECTURA_Y_ROADMAP.md
+*.pdf
+*.pptx
+cdk/assets/docs/
+scripts/generar_guia_oportunidades_pdf.py
