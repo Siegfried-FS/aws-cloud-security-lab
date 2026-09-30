@@ -8,18 +8,14 @@ import { Construct } from 'constructs';
 import * as path from 'path';
 
 export interface CloudSecurityStackProps extends cdk.StackProps {
-  communityName?: string;
-  speakerMeetupUrl?: string;
+  labName?: string;
 }
 
 export class CloudSecurityStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: CloudSecurityStackProps) {
     super(scope, id, props);
 
-    const communityName = this.node.tryGetContext('communityName') || props?.communityName || 'AWS Cloud Security Lab';
-    const speakerMeetupUrl = this.node.tryGetContext('speakerMeetupUrl') || props?.speakerMeetupUrl || 'https://www.meetup.com/aws-user-group-playa-vicente/';
-    const unamMeetupUrl = this.node.tryGetContext('unamMeetupUrl') || 'https://www.meetup.com/aws-sbg-at-unam/';
-    const mixtleDriveUrl = this.node.tryGetContext('mixtleDriveUrl') || 'https://drive.google.com/drive/folders/1Do2TAG4_kNnOXpiiKBc4qSzilOxZQ_N6?usp=drive_link';
+    const labName = this.node.tryGetContext('labName') || props?.labName || 'AWS Cloud Security Lab';
     const enableHttp = this.node.tryGetContext('enableHttp') !== false && this.node.tryGetContext('enableHttp') !== 'false';
     const enableUpload = this.node.tryGetContext('enableUpload') !== false && this.node.tryGetContext('enableUpload') !== 'false';
 
@@ -41,9 +37,9 @@ export class CloudSecurityStack extends cdk.Stack {
       ],
     });
 
-    // Desplegar automáticamente la Guía Oficial de Certificaciones AWS en el bucket privado
-    new s3deploy.BucketDeployment(this, 'DeployCertificationDoc', {
-      sources: [s3deploy.Source.asset(path.join(__dirname, '../assets/docs'))],
+    // Desplegar automáticamente la Guía de Referencia de Seguridad en el bucket privado
+    new s3deploy.BucketDeployment(this, 'DeploySecurityReferenceDoc', {
+      sources: [s3deploy.Source.asset(path.join(__dirname, '../assets/sample-docs'))],
       destinationBucket: photoGalleryBucket,
       destinationKeyPrefix: 'docs',
       retainOnDelete: false,
@@ -134,10 +130,11 @@ export class CloudSecurityStack extends cdk.Stack {
       'User=root',
       'WorkingDirectory=/opt/cloudsec-app',
       `Environment="BUCKET_NAME=${photoGalleryBucket.bucketName}"`,
-      `Environment="COMMUNITY_NAME=${communityName}"`,
-      `Environment="SPEAKER_MEETUP_URL=${speakerMeetupUrl}"`,
-      `Environment="UNAM_MEETUP_URL=${unamMeetupUrl}"`,
-      `Environment="MIXTLE_DRIVE_URL=${mixtleDriveUrl}"`,
+      `Environment="COMMUNITY_NAME=${labName}"`,
+      `Environment="EVENT_NAME=Detección y Mitigación de 4 Puntos Ciegos"`,
+      `Environment="REPO_URL=https://github.com/Siegfried-FS/aws-cloud-security-lab"`,
+      `Environment="DOCS_URL=https://docs.aws.amazon.com/security/"`,
+      `Environment="DEMO_DOC_NAME=aws_cloud_security_reference_guide.pdf"`,
       `Environment="AWS_REGION=${this.region}"`,
       'ExecStart=/usr/bin/python3 /opt/cloudsec-app/server.py',
       'Restart=always',

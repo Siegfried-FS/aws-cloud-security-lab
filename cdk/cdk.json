@@ -14,9 +14,7 @@
     ]
   },
   "context": {
-    "communityName": "Comunidad de Tecnología & Cloud",
-    "speakerMeetupUrl": "https://www.meetup.com/aws-user-group-playa-vicente/",
-    "unamMeetupUrl": "https://www.meetup.com/aws-sbg-at-unam/",
+    "labName": "AWS Cloud Security Lab",
     "enableHttp": true,
     "enableS3": true
   }

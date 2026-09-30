@@ -309,7 +309,7 @@ def cleanup_manual_lab_resources(profile):
             users = json.loads(res.stdout).get("Users", [])
             for u in users:
                 uname = u.get("UserName", "")
-                if "estudiante" in uname.lower() or "unam" in uname.lower():
+                if "cloudsec" in uname.lower() or "demo" in uname.lower():
                     print(f"  [-] Eliminando usuario IAM manual: {BOLD}{uname}{RESET}")
                     pol_res = run_aws_cmd(["iam", "list-attached-user-policies", "--user-name", uname, "--output", "json"], profile)
                     if pol_res.returncode == 0:
@@ -339,7 +339,7 @@ def cleanup_manual_lab_resources(profile):
             groups = json.loads(res.stdout).get("Groups", [])
             for g in groups:
                 gname = g.get("GroupName", "")
-                if "unam" in gname.lower() or "estudiantes" in gname.lower():
+                if "cloudsec" in gname.lower() or "demo" in gname.lower():
                     print(f"  [-] Eliminando grupo IAM manual: {BOLD}{gname}{RESET}")
                     pol_res = run_aws_cmd(["iam", "list-attached-group-policies", "--group-name", gname, "--output", "json"], profile)
                     if pol_res.returncode == 0:
@@ -391,7 +391,7 @@ def cleanup_manual_lab_resources(profile):
                 if "cdk-hnb659fds" in lower or "cdktoolkit" in lower:
                     continue
                 if (lower.startswith("seguridad-") or lower.startswith("demo-") or 
-                    "unam" in lower or "cloudsec" in lower or "privado" in lower or "publico" in lower):
+                    "cloudsec" in lower or "privado" in lower or "publico" in lower):
                     empty_and_delete_bucket(bname, profile)
         except Exception as e:
             print(f"  [WARN] Error revisando buckets: {e}")

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>AWS Cloud Security Lab · Reference Guide</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      font-size: 10pt;
+      line-height: 1.45;
+    }
+    header {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .header-title h1 {
+      font-size: 16pt;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      font-weight: 800;
+    }
+    .header-title p {
+      font-size: 9pt;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 4px;
+      font-size: 8pt;
+      font-weight: 600;
+      color: #0369a1;
+      font-family: monospace;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .card {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f8fafc;
+    }
+    .card-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #0369a1;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-title span {
+      background: #0284c7;
+      color: white;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 8pt;
+    }
+    p, li {
+      font-size: 8.5pt;
+      color: #334155;
+    }
+    ul {
+      margin-left: 14px;
+      margin-top: 4px;
+    }
+    li {
+      margin-bottom: 3px;
+    }
+    .code-box {
+      background: #0f172a;
+      color: #38bdf8;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 7.5pt;
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin-top: 6px;
+      overflow-x: auto;
+    }
+    .footer {
+      margin-top: 14px;
+      padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8pt;
+      color: #64748b;
+    }
+    .callout {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-top: 8px;
+      font-size: 8.5pt;
+      color: #065f46;
+    }
+    .callout strong {
+      color: #047857;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <h1>AWS Cloud Security Lab</h1>
+      <p>Hoja de Referencia Técnica · Detección y Mitigación de 4 Puntos Ciegos</p>
+    </div>
+    <div class="badge">SEGURIDAD PRÁCTICA & COMPLIANCE</div>
+  </header>
+
+  <div class="grid">
+    <!-- PUNTO CIEGO 1 -->
+    <div class="card">
+      <div class="card-title">
+        <span>01</span> IAM: Principio de Menor Privilegio
+      </div>
+      <p><strong>El Riesgo:</strong> Conceder permisos con comodines globales (<code>s3:*</code> en <code>Resource: *</code>) permite exfiltración y borrado destructivo si la instancia es vulnerada.</p>
+      <ul>
+        <li>Nunca uses políticas administradas globales como <code>AdministratorAccess</code> en roles de servicio.</li>
+        <li>Restringe las acciones al verbo estricto necesario (ej. <code>s3:PutObject</code>).</li>
+        <li>Acota el recurso al ARN exacto del prefijo del bucket (<code>arn:aws:s3:::bucket/galeria/*</code>).</li>
+      </ul>
+      <div class="code-box">
+"Action": ["s3:PutObject"],<br>
+"Resource": "arn:aws:s3:::cloudsec-demo/galeria/*"
+      </div>
+    </div>
+
+    <!-- PUNTO CIEGO 2 -->
+    <div class="card">
+      <div class="card-title">
+        <span>02</span> Perímetro de Red: SG vs. NACL
+      </div>
+      <p><strong>El Riesgo:</strong> Abrir puertos de gestión (SSH/RDP) o servicios a <code>0.0.0.0/0</code> expone los workloads a escaneos automatizados y fuerza bruta.</p>
+      <ul>
+        <li><strong>Security Groups:</strong> Son <em>stateful</em> (con estado) y operan a nivel de interfaz de red (ENI). Solo permiten reglas de <code>ALLOW</code>.</li>
+        <li><strong>Network ACLs:</strong> Son <em>stateless</em> (sin estado) y operan a nivel de subred. Permiten reglas explícitas de <code>DENY</code> para bloquear IPs atacantes antes de llegar a la instancia.</li>
+        <li>Sustituye SSH público por <strong>AWS Systems Manager Session Manager</strong> ($0 USD).</li>
+      </ul>
+    </div>
+
+    <!-- PUNTO CIEGO 3 -->
+    <div class="card">
+      <div class="card-title">
+        <span>03</span> Amazon S3: Block Public Access & STS
+      </div>
+      <p><strong>El Riesgo:</strong> Hacer buckets públicos para permitir descargas de clientes viola regulaciones (ISO 27001, SOC 2) y genera riesgo de fuga de datos masiva.</p>
+      <ul>
+        <li>Activa <strong>S3 Block Public Access (BPA)</strong> en los 4 niveles a nivel de cuenta y bucket.</li>
+        <li>Para descargas seguras, genera <strong>URLs prefirmadas temporales</strong> firmadas con SigV4 vía AWS STS.</li>
+        <li>Las URLs expiran automáticamente (ej. 15 minutos) sin necesidad de abrir el bucket a internet.</li>
+      </ul>
+      <div class="code-box">
+s3.generate_presigned_url('get_object',<br>
+&nbsp;&nbsp;Params={'Bucket': b, 'Key': k}, ExpiresIn=900)
+      </div>
+    </div>
+
+    <!-- PUNTO CIEGO 4 -->
+    <div class="card">
+      <div class="card-title">
+        <span>04</span> Trazabilidad Forense: AWS CloudTrail
+      </div>
+      <p><strong>El Riesgo:</strong> Modificaciones no autorizadas en reglas de red o roles IAM pasan desapercibidas sin un registro inmutable de auditoría.</p>
+      <ul>
+        <li><strong>Event History:</strong> Registra gratis los últimos 90 días de llamadas a la API de gestión.</li>
+        <li>Identifica al actor: ARN del usuario o rol asumiendo la llamada.</li>
+        <li>Registra la IP de origen, el User-Agent y los parámetros exactos (ej. <code>AuthorizeSecurityGroupIngress</code>).</li>
+        <li>Esencial para responder a incidentes y auditorías SOC 1/2 e ISO 27001.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Gobernanza y Destrucción a $0 USD Residuales:</strong> Todo laboratorio práctico debe contar con un ciclo de vida limpio. Una vez concluidas las pruebas de validación, ejecuta <code>cdk destroy</code> para eliminar buckets, roles, security groups y la VPC, garantizando cero costos posteriores.
+  </div>
+
+  <div class="footer">
+    <span>AWS Cloud Security Lab · Hands-on Educational Framework</span>
+    <span>Licencia MIT · Arquitectura 100% Replicable</span>
+    <span>Seguridad en la Nube</span>
+  </div>
+
+</body>
+</html>

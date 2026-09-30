@@ -8,9 +8,9 @@ import base64
 
 BUCKET_NAME = os.environ.get("BUCKET_NAME", "")
 COMMUNITY_NAME = os.environ.get("COMMUNITY_NAME", "AWS Cloud Security Lab")
-SPEAKER_MEETUP_URL = os.environ.get("SPEAKER_MEETUP_URL", "https://www.meetup.com/aws-user-group-playa-vicente/")
-UNAM_MEETUP_URL = os.environ.get("UNAM_MEETUP_URL", "https://www.meetup.com/aws-sbg-at-unam/")
-MIXTLE_DRIVE_URL = os.environ.get("MIXTLE_DRIVE_URL", "https://drive.google.com/drive/folders/1Do2TAG4_kNnOXpiiKBc4qSzilOxZQ_N6?usp=drive_link")
+EVENT_NAME = os.environ.get("EVENT_NAME", "Detección y Mitigación de 4 Puntos Ciegos")
+REPO_URL = os.environ.get("REPO_URL", "https://github.com/Siegfried-FS/aws-cloud-security-lab")
+DOCS_URL = os.environ.get("DOCS_URL", "https://docs.aws.amazon.com/security/")
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "/opt/cloudsec-app/uploads")
 
@@ -183,8 +183,8 @@ class PhotoWallHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             
-            doc_filename = "Guia_Oportunidades_Becas_AWS_2026.pdf"
-            direct_url = f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/docs/{doc_filename}" if BUCKET_NAME else "https://s3.amazonaws.com/demo-seguridad-cloud/docs/Guia_Oportunidades_Becas_AWS_2026.pdf"
+            doc_filename = os.environ.get("DEMO_DOC_NAME", "aws_cloud_security_reference_guide.pdf")
+            direct_url = f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/docs/{doc_filename}" if BUCKET_NAME else f"https://s3.amazonaws.com/demo-seguridad-cloud/docs/{doc_filename}"
             
             code = 403
             if BUCKET_NAME:
@@ -221,7 +221,7 @@ class PhotoWallHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             
-            doc_filename = "Guia_Oportunidades_Becas_AWS_2026.pdf"
+            doc_filename = os.environ.get("DEMO_DOC_NAME", "aws_cloud_security_reference_guide.pdf")
             presigned_url = ""
             if BUCKET_NAME:
                 try:
@@ -246,17 +246,17 @@ class PhotoWallHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(resp).encode('utf-8'))
             return
 
-        if clean_path in ["/docs/Guia_Oportunidades_Becas_AWS_2026.pdf", "/docs/AWS_certification_paths.pdf"]:
+        if clean_path.startswith("/docs/"):
             req_name = os.path.basename(self.path)
-            doc_path = os.path.join(os.path.dirname(__file__), "docs", req_name)
-            if not os.path.exists(doc_path):
-                doc_path = os.path.join(os.path.dirname(__file__), "docs", "Guia_Oportunidades_Becas_AWS_2026.pdf")
-            if not os.path.exists(doc_path):
-                doc_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "Guia_Oportunidades_Becas_AWS_2026.pdf")
-            if not os.path.exists(doc_path):
-                doc_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "AWS_certification_paths.pdf")
+            candidate_paths = [
+                os.path.join(os.path.dirname(__file__), "sample-docs", req_name),
+                os.path.join(os.path.dirname(__file__), "sample-docs", "aws_cloud_security_reference_guide.pdf"),
+                os.path.join(os.path.dirname(__file__), "docs", req_name),
+                os.path.join(os.path.dirname(__file__), "docs", "AWS_certification_paths.pdf"),
+            ]
+            doc_path = next((p for p in candidate_paths if os.path.exists(p)), None)
             
-            if os.path.exists(doc_path):
+            if doc_path:
                 self.send_response(200)
                 self.send_header('Content-type', 'application/pdf')
                 self.send_header('Content-Disposition', f'attachment; filename="{req_name}"')
@@ -267,407 +267,351 @@ class PhotoWallHandler(http.server.SimpleHTTPRequestHandler):
 
         # RENDERIZADO DEL SITIO WEB PRINCIPAL (HTML / CSS / JS CLIENTE)
         html = f"""<!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es" class="scroll-smooth antialiased">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Mural de Seguridad AWS · {COMMUNITY_NAME}</title>
+  <title>{COMMUNITY_NAME} · {EVENT_NAME}</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {{
-      --cyan-neon: #00e5ff;
-      --amber-neon: #ffb800;
-      --emerald-neon: #10b981;
-    }}
     body {{
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #060913;
+      background-color: #080c14;
       background-image: 
-        radial-gradient(ellipse at 50% 0%, rgba(0, 229, 255, 0.15) 0%, transparent 60%),
-        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 45%),
-        linear-gradient(rgba(6, 9, 19, 0.98), rgba(6, 9, 19, 0.98));
-      color: #f1f5f9;
+        radial-gradient(ellipse at 50% 0%, rgba(14, 165, 233, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 90% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+        linear-gradient(rgba(8, 12, 20, 0.98), rgba(8, 12, 20, 0.98));
+      color: #f8fafc;
       min-height: 100vh;
     }}
     .font-mono {{ font-family: 'JetBrains Mono', monospace; }}
     .sec-card {{
-      background: rgba(13, 19, 36, 0.88);
-      border: 1px solid rgba(0, 229, 255, 0.22);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
       backdrop-filter: blur(12px);
     }}
     .dropzone-active {{
-      border-color: #00e5ff !important;
-      background: rgba(0, 229, 255, 0.08) !important;
-    }}
-    @keyframes pulse-ring {{
-      0% {{ transform: scale(0.95); opacity: 0.8; }}
-      50% {{ transform: scale(1.15); opacity: 0.3; }}
-      100% {{ transform: scale(0.95); opacity: 0.8; }}
-    }}
-    .pulse-ring {{
-      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      border-color: #38bdf8 !important;
+      background: rgba(14, 165, 233, 0.08) !important;
     }}
   </style>
 </head>
-<body class="flex flex-col justify-between p-3 sm:p-6 max-w-3xl mx-auto w-full antialiased selection:bg-cyan-500 selection:text-slate-950">
+<body class="flex flex-col justify-between p-4 sm:p-6 max-w-3xl mx-auto w-full selection:bg-sky-500 selection:text-slate-950">
 
-  <!-- TOP BAR: AWS NODE STATUS (ARCADE HUD) -->
-  <aside class="w-full mb-4">
-    <div class="sec-card px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-xs font-mono border-cyan-500/30">
+  <!-- TOP BAR: CONSOLA DE ESTADO DE INFRAESTRUCTURA -->
+  <aside class="w-full mb-5">
+    <div class="sec-card px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2.5 text-[11px] font-mono border-slate-800">
       <div class="flex items-center gap-2">
-        <span class="relative flex h-2.5 w-2.5">
-          <span class="pulse-ring absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
-        <span class="font-bold text-white uppercase tracking-wider">AWS EC2 ONLINE</span>
-        <span class="text-gray-500">|</span>
-        <span class="text-cyan-300">t2.micro</span>
-        <span class="text-gray-500">|</span>
-        <span class="text-gray-400">{AWS_REGION}</span>
+        <span class="font-semibold text-slate-200 uppercase tracking-wide">EC2 Instance Online</span>
+        <span class="text-slate-600">/</span>
+        <span class="text-slate-400">t2.micro · {AWS_REGION}</span>
       </div>
       <div class="flex items-center gap-2">
-        <span class="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-semibold">
-          IAM ROLE ACTIVE
+        <span class="px-2 py-0.5 rounded bg-sky-950/70 border border-sky-800/60 text-sky-300 font-medium">
+          IAM Role: Attached
         </span>
-        <span class="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-300 font-semibold">
-          S3 BPA: ON
+        <span class="px-2 py-0.5 rounded bg-emerald-950/70 border border-emerald-800/60 text-emerald-300 font-medium">
+          S3 BPA: Enforced
         </span>
       </div>
     </div>
   </aside>
 
   <!-- CABECERA PRINCIPAL -->
-  <header class="text-center space-y-2 mb-6 pt-1">
-    <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/40 text-cyan-300 text-xs font-mono font-bold uppercase tracking-wider">
-      <span>🛡️</span> DEMO INTERACTIVA EN VIVO · AWS CLOUD SECURITY
+  <header class="text-center space-y-2 mb-6">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-sky-400 text-xs font-mono font-medium">
+      <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      <span>{EVENT_NAME} · NIVEL 100</span>
     </div>
     
-    <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+    <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-snug">
       {COMMUNITY_NAME}
     </h1>
     
-    <p class="text-xs sm:text-sm font-mono text-gray-400 max-w-lg mx-auto">
-      Experimenta en tiempo real cómo <b class="text-cyan-300">AWS IAM</b>, los <b class="text-amber-300">Security Groups</b> y <b class="text-emerald-300">Amazon S3</b> protegen las aplicaciones en la nube.
+    <p class="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
+      Laboratorio interactivo para detectar y corregir descuidos habituales de seguridad: <span class="text-slate-200 font-semibold">IAM Roles temporales</span>, <span class="text-slate-200 font-semibold">Security Groups</span> y protección en <span class="text-slate-200 font-semibold">Amazon S3 con AWS STS</span>.
     </p>
 
     <!-- NAVEGACIÓN RÁPIDA -->
     <nav class="flex justify-center gap-2 pt-2">
-      <a href="#experimento-upload" class="px-3 py-1 rounded-lg bg-slate-900 border border-gray-800 text-[11px] font-mono text-gray-300 hover:text-cyan-300 hover:border-cyan-500/50 transition">
-        📸 Subir Foto
+      <a href="#experimento-upload" class="px-3 py-1 rounded-lg bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300 hover:text-sky-300 hover:border-slate-700 transition">
+        1. Subida IAM Role
       </a>
-      <a href="#experimento-s3" class="px-3 py-1 rounded-lg bg-slate-900 border border-gray-800 text-[11px] font-mono text-gray-300 hover:text-amber-300 hover:border-amber-500/50 transition">
-        📦 Reto S3 STS
+      <a href="#experimento-s3" class="px-3 py-1 rounded-lg bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300 hover:text-amber-300 hover:border-slate-700 transition">
+        2. Reto S3 & STS
       </a>
-      <a href="#mural-galeria" class="px-3 py-1 rounded-lg bg-slate-900 border border-gray-800 text-[11px] font-mono text-gray-300 hover:text-purple-300 hover:border-purple-500/50 transition">
-        🖼️ Ver Mural
+      <a href="#mural-galeria" class="px-3 py-1 rounded-lg bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300 hover:text-indigo-300 hover:border-slate-700 transition">
+        3. Muro de Evidencias
       </a>
     </nav>
   </header>
 
-  <!-- CONTENIDO INTERACTIVO -->
+  <!-- CONTENIDO DEL LABORATORIO -->
   <main class="space-y-6">
 
-    <!-- EXPERIMENTO 1: SUBIDA DE FOTOS (s3:PutObject) -->
+    <!-- EXPERIMENTO 1: SUBIDA CON IAM ROLE (s3:PutObject) -->
     <section id="experimento-upload" class="sec-card p-5 sm:p-6 space-y-4">
-      <div class="flex items-center justify-between border-b border-cyan-500/20 pb-3">
-        <div class="flex items-center gap-2">
-          <span class="text-lg">📸</span>
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-1.5 rounded-lg bg-sky-950/60 border border-sky-800/60 text-sky-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          </div>
           <div>
-            <h2 class="text-sm sm:text-base font-mono font-bold text-white uppercase tracking-wider">
-              1. Sube tu Foto o Selfie al Mural
+            <h2 class="text-sm font-semibold text-white tracking-wide">
+              1. Demostración de IAM Roles y Principio de Menor Privilegio
             </h2>
-            <p class="text-[10px] font-mono text-cyan-400">Demostración en Vivo: AWS IAM Role & s3:PutObject</p>
+            <p class="text-[11px] font-mono text-slate-400">Envío de objetos mediante credenciales temporales generadas por STS (s3:PutObject)</p>
           </div>
         </div>
-        <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold bg-cyan-500/10 border border-cyan-400/40 text-cyan-300">
-          CAPA IAM
+        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">
+          IAM / CAPA 7
         </span>
       </div>
 
-      <!-- INVITACIÓN PARA EVENTO PRESENCIAL -->
-      <div class="bg-gradient-to-r from-cyan-950/40 via-slate-900/60 to-purple-950/40 border border-cyan-500/30 rounded-xl p-4 space-y-3">
+      <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-3.5 space-y-2">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="text-base">📍</span>
-            <span class="text-xs font-bold text-white uppercase tracking-wide">¡Participa desde tu lugar con tu celular!</span>
-          </div>
-          <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-bold">
-            EN VIVO
+          <span class="text-xs font-semibold text-slate-200">Participación interactiva en vivo</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 font-medium">
+            CANAL ACTIVO
           </span>
         </div>
-        
-        <p class="text-xs text-gray-300 leading-relaxed">
-          Toma una foto con tu cámara para proyectarla en el auditorio. Tu navegador enviará la imagen a la instancia EC2, y el servidor ejecutará la llamada a Amazon S3 usando su <b>IAM Instance Profile</b> sin ninguna contraseña escrita en código.
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Toma una foto o selecciona una imagen. El navegador la enviará al servidor EC2 y este invocará a Amazon S3 usando su <b class="text-slate-200">IAM Instance Profile</b>. No existen credenciales estáticas ni secretos guardados en el código.
         </p>
-
-        <!-- CHIPS DE IDEAS PARA ASISTENTES -->
-        <div class="pt-1">
-          <span class="text-[10px] font-mono text-cyan-300 font-semibold uppercase tracking-wider block mb-1.5">
-            💡 ¿Qué foto puedes subir hoy?
-          </span>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[11px] font-mono text-gray-200">
-            <div class="bg-slate-950/80 px-2.5 py-2 rounded-lg border border-gray-800 flex items-center gap-1.5">
-              <span>🤳</span> Selfie personal
-            </div>
-            <div class="bg-slate-950/80 px-2.5 py-2 rounded-lg border border-gray-800 flex items-center gap-1.5">
-              <span>👥</span> Con amigos
-            </div>
-            <div class="bg-slate-950/80 px-2.5 py-2 rounded-lg border border-gray-800 flex items-center gap-1.5">
-              <span>🖥️</span> Pantalla charla
-            </div>
-            <div class="bg-slate-950/80 px-2.5 py-2 rounded-lg border border-gray-800 flex items-center gap-1.5">
-              <span>🎙️</span> El auditorio
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- FORMULARIO DE CAPTURA -->
+      <!-- FORMULARIO -->
       <div class="space-y-3 pt-1">
-        <!-- NOMBRE Y ATRIBUTO -->
         <div class="space-y-1.5">
           <div class="flex items-center justify-between">
-            <label class="block text-xs font-mono font-semibold text-gray-300">
-              Tu Nombre, Alias o Institución:
+            <label class="block text-xs font-mono font-medium text-slate-300">
+              Identificador o Alias del Participante:
             </label>
-            <div class="flex gap-1 text-[10px] font-mono">
-              <button type="button" onclick="setAlias('Estudiante')" class="text-cyan-400 hover:underline px-1">Estudiante</button>
-              <span class="text-gray-600">·</span>
-              <button type="button" onclick="setAlias('Builder')" class="text-cyan-400 hover:underline px-1">Builder</button>
-              <span class="text-gray-600">·</span>
-              <button type="button" onclick="setAlias('Ponente')" class="text-cyan-400 hover:underline px-1">Ponente</button>
+            <div class="flex gap-1 text-[11px] font-mono">
+              <button type="button" onclick="setAlias('Asistente')" class="text-sky-400 hover:text-sky-300 px-1">Asistente</button>
+              <span class="text-slate-600">·</span>
+              <button type="button" onclick="setAlias('Builder')" class="text-sky-400 hover:text-sky-300 px-1">Builder</button>
+              <span class="text-slate-600">·</span>
+              <button type="button" onclick="setAlias('Auditor')" class="text-sky-400 hover:text-sky-300 px-1">Auditor</button>
             </div>
           </div>
-          <input type="text" id="author-input" placeholder="Ej: Roberto / Andrea (Ingeniería) / Asistente" class="w-full px-4 py-3 bg-slate-950 border border-gray-700 rounded-xl text-base sm:text-sm text-white focus:outline-none focus:border-cyan-400 font-mono transition">
+          <input type="text" id="author-input" placeholder="Ej: Auditor-01 / CloudSec-Lab / Builder" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-sky-500 font-mono transition">
         </div>
 
-        <!-- INPUTS OCULTOS DE CÁMARA Y ARCHIVO -->
         <input type="file" id="camera-input" accept="image/*" capture="user" class="hidden">
         <input type="file" id="file-input" accept="image/*" class="hidden">
 
-        <!-- BOTONES DE DISPARO DUAL (CÁMARA / GALERÍA) -->
+        <!-- BOTONES DE CAPTURA -->
         <div class="grid grid-cols-2 gap-2.5">
-          <button type="button" onclick="document.getElementById('camera-input').click()" class="py-3 px-3 rounded-xl border border-cyan-400/50 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-200 font-mono text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
-            <span class="text-base">📸</span>
-            <span>Tomar Selfie Ahora</span>
+          <button type="button" onclick="document.getElementById('camera-input').click()" class="py-2.5 px-3 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 font-mono text-xs font-medium flex items-center justify-center gap-2 transition active:scale-95">
+            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>Capturar Foto</span>
           </button>
           
-          <button type="button" onclick="document.getElementById('file-input').click()" class="py-3 px-3 rounded-xl border border-gray-700 bg-slate-900 hover:bg-slate-800 text-gray-200 font-mono text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
-            <span class="text-base">🖼️</span>
-            <span>Elegir de Galería</span>
+          <button type="button" onclick="document.getElementById('file-input').click()" class="py-2.5 px-3 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 font-mono text-xs font-medium flex items-center justify-center gap-2 transition active:scale-95">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span>Seleccionar Archivo</span>
           </button>
         </div>
 
-        <!-- DRAG AND DROP ZONE (PARA LAPTOPS / ESCRITORIO) -->
-        <div id="drop-zone" class="hidden sm:block border-2 border-dashed border-gray-700/80 rounded-xl p-4 text-center hover:border-cyan-500/60 transition cursor-pointer" onclick="document.getElementById('file-input').click()">
-          <p class="text-xs font-mono text-gray-400">
-            💻 ¿Estás en laptop? Arrastra y suelta tu foto aquí o haz clic para seleccionarla.
+        <div id="drop-zone" class="hidden sm:block border border-dashed border-slate-700/80 rounded-lg p-3 text-center hover:border-sky-500/60 transition cursor-pointer" onclick="document.getElementById('file-input').click()">
+          <p class="text-xs font-mono text-slate-400">
+            Arrastra y suelta una imagen aquí o haz clic para examinar.
           </p>
         </div>
 
-        <!-- CAJA DE PREVISUALIZACIÓN -->
-        <div id="preview-box" class="hidden rounded-xl border border-cyan-400/50 bg-slate-950 p-3 space-y-2 text-center transition-all">
+        <!-- PREVIEW -->
+        <div id="preview-box" class="hidden rounded-lg border border-slate-700 bg-slate-950 p-3 space-y-2 text-center transition-all">
           <div class="relative inline-block max-w-full">
-            <img id="preview-img" class="max-h-56 mx-auto rounded-lg border border-cyan-500/40 shadow-xl object-contain">
-            <button type="button" onclick="clearPreview()" class="absolute top-2 right-2 bg-slate-900/90 text-rose-400 hover:text-rose-200 rounded-full p-1.5 text-xs border border-rose-500/40" title="Eliminar foto">
-              ✕
+            <img id="preview-img" class="max-h-52 mx-auto rounded border border-slate-800 object-contain">
+            <button type="button" onclick="clearPreview()" class="absolute top-2 right-2 bg-slate-900/90 text-slate-400 hover:text-white rounded-full p-1 text-xs border border-slate-700" title="Eliminar imagen">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
-          <div class="flex items-center justify-center gap-3 text-[11px] font-mono text-cyan-300">
-            <span>✨ Foto lista</span>
-            <span class="text-gray-600">•</span>
+          <div class="flex items-center justify-center gap-2 text-xs font-mono text-slate-400">
+            <span>Imagen lista</span>
+            <span>·</span>
             <span id="preview-size">0 KB</span>
           </div>
         </div>
 
-        <!-- BOTÓN DE ACCIÓN PRINCIPAL (SUBIR A S3) -->
-        <button onclick="uploadPhoto()" id="btn-upload" class="w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-cyan-400 via-teal-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-95 uppercase tracking-wide">
-          <span id="upload-btn-text">🚀 Subir Foto al Mural (Probar s3:PutObject)</span>
+        <!-- BOTÓN DE SUBIDA -->
+        <button onclick="uploadPhoto()" id="btn-upload" class="w-full py-3 rounded-lg font-semibold text-xs sm:text-sm bg-sky-600 hover:bg-sky-500 text-white transition flex items-center justify-center gap-2 shadow active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <span id="upload-btn-text">Subir a S3 (Invocar s3:PutObject vía IAM)</span>
         </button>
 
-        <!-- BARRA DE PROGRESO DE LA PETICIÓN -->
         <div id="upload-progress" class="hidden space-y-1 pt-1">
-          <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-cyan-500/30">
-            <div id="progress-bar" class="bg-gradient-to-r from-cyan-400 to-emerald-400 h-full w-0 transition-all duration-300"></div>
+          <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800">
+            <div id="progress-bar" class="bg-sky-500 h-full w-0 transition-all duration-300"></div>
           </div>
-          <p id="progress-text" class="text-[10px] font-mono text-cyan-400 text-center">Iniciando llamada a AWS API...</p>
+          <p id="progress-text" class="text-[10px] font-mono text-sky-400 text-center">Iniciando petición a AWS API...</p>
         </div>
 
-        <!-- ALERT BOX EXPERIMENTO 1 -->
-        <div id="alert-box" class="hidden p-4 text-xs font-mono rounded-xl border transition-all"></div>
+        <div id="alert-box" class="hidden p-3.5 text-xs font-mono rounded-lg border transition-all"></div>
       </div>
     </section>
 
-
-    <!-- EXPERIMENTO 2: DESCARGA S3 PRIVADO VS MENOR PRIVILEGIO -->
-    <section id="experimento-s3" class="sec-card p-5 sm:p-6 space-y-4 border-amber-500/30">
-      <div class="flex items-center justify-between border-b border-amber-500/20 pb-3">
-        <div class="flex items-center gap-2">
-          <span class="text-lg">📦</span>
+    <!-- EXPERIMENTO 2: S3 PRIVADO VS STS PRESIGNED URL -->
+    <section id="experimento-s3" class="sec-card p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-1.5 rounded-lg bg-amber-950/60 border border-amber-800/60 text-amber-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
           <div>
-            <h2 class="text-sm sm:text-base font-mono font-bold text-white uppercase tracking-wider">
-              2. Laboratorio S3: Menor Privilegio & AWS STS
+            <h2 class="text-sm font-semibold text-white tracking-wide">
+              2. Protección de Datos en Amazon S3 y Delegación con AWS STS
             </h2>
-            <p class="text-[10px] font-mono text-amber-300">Catálogo Oficial de Becas y Vouchers de Certificación</p>
+            <p class="text-[11px] font-mono text-slate-400">Punto Ciego 3: Bloqueo de Acceso Público vs URLs Prefirmadas</p>
           </div>
         </div>
-        <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold bg-amber-500/10 border border-amber-400/40 text-amber-300">
-          CAPA S3 + STS
+        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">
+          S3 + STS
         </span>
       </div>
 
-      <p class="text-xs text-gray-300 leading-relaxed">
-        El bucket de Amazon S3 almacena la <b>Guía Oficial de Becas AWS 2026</b>. Comprueba cómo la política de <b>Block Public Access</b> impide que un atacante descargue el archivo anónimamente vs cómo la aplicación genera un pase temporal firmado por AWS STS:
+      <p class="text-xs text-slate-400 leading-relaxed">
+        El bucket privado resguarda la <b class="text-slate-200">Guía de Referencia Técnica y Buenas Prácticas de Seguridad en AWS</b>. Compara el comportamiento entre una petición anónima directa y la emisión de una URL prefirmada temporal generada con credenciales de STS:
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-        <!-- BOTÓN 1: ACCESO PÚBLICO DIRECTO (FALLA CON 403) -->
-        <button onclick="testPublicDownload()" id="btn-public-download" class="p-4 rounded-xl border border-rose-500/50 bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 text-xs font-mono font-bold flex flex-col items-center justify-center gap-1.5 transition text-center active:scale-95 shadow-md">
-          <span class="text-xl">🛑</span>
-          <span class="text-sm text-white">1. Probar Descarga Directa</span>
-          <span class="text-[10px] font-normal text-rose-300/80">URL Pública sin autenticar</span>
-          <span class="text-[9px] px-2 py-0.5 rounded bg-rose-900/80 border border-rose-500/40 text-rose-200 mt-1">
-            Esperado: 403 Forbidden
-          </span>
+        <!-- TEST 1: PÚBLICO (403) -->
+        <button onclick="testPublicDownload()" id="btn-public-download" class="p-3.5 rounded-lg border border-rose-900/60 bg-rose-950/30 hover:bg-rose-950/50 text-slate-200 text-xs font-mono flex flex-col items-start gap-1 transition active:scale-95 text-left">
+          <div class="flex items-center gap-2 w-full justify-between">
+            <span class="font-semibold text-rose-300">Petición Anónima Directa</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-900/80 text-rose-200 font-mono">403 Expected</span>
+          </div>
+          <span class="text-[11px] text-slate-400">Intenta descargar sin pasar por autenticación.</span>
         </button>
 
-        <!-- BOTÓN 2: DESCARGA CON PRESIGNED URL (200 OK) -->
-        <button onclick="testPresignedDownload()" id="btn-presigned-download" class="p-4 rounded-xl border border-emerald-500/50 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-200 text-xs font-mono font-bold flex flex-col items-center justify-center gap-1.5 transition text-center active:scale-95 shadow-md">
-          <span class="text-xl">⚡</span>
-          <span class="text-sm text-white">2. Descarga Segura con STS</span>
-          <span class="text-[10px] font-normal text-emerald-300/80">Presigned URL temporal (15 min)</span>
-          <span class="text-[9px] px-2 py-0.5 rounded bg-emerald-900/80 border border-emerald-500/40 text-emerald-200 mt-1">
-            Esperado: 200 OK + Descarga
-          </span>
+        <!-- TEST 2: PRESIGNED URL (200) -->
+        <button onclick="testPresignedDownload()" id="btn-presigned-download" class="p-3.5 rounded-lg border border-emerald-900/60 bg-emerald-950/30 hover:bg-emerald-950/50 text-slate-200 text-xs font-mono flex flex-col items-start gap-1 transition active:scale-95 text-left">
+          <div class="flex items-center gap-2 w-full justify-between">
+            <span class="font-semibold text-emerald-300">Descarga Segura (STS SigV4)</span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/80 text-emerald-200 font-mono">200 + Token</span>
+          </div>
+          <span class="text-[11px] text-slate-400">Genera una Pre-signed URL temporal válida por 15 min.</span>
         </button>
       </div>
 
-      <!-- ALERT BOX EXPERIMENTO 2 -->
-      <div id="s3-alert-box" class="hidden p-4 text-xs font-mono rounded-xl border transition-all"></div>
+      <div id="s3-alert-box" class="hidden p-3.5 text-xs font-mono rounded-lg border transition-all"></div>
     </section>
 
-
-    <!-- MURAL COLECTIVO DE FOTOS -->
-    <section id="mural-galeria" class="space-y-3">
-      <div class="sec-card p-4 sm:p-5">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-3">
-          <div class="flex items-center gap-2">
-            <span class="text-lg">🖼️</span>
-            <div>
-              <h2 class="text-sm sm:text-base font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <span>Mural Colectivo de la Sesión</span>
-                <span id="photo-counter-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/40 text-cyan-300">
-                  0 fotos
-                </span>
-              </h2>
-              <p class="text-[10px] font-mono text-gray-400">Fotos subidas en vivo por los participantes</p>
-            </div>
+    <!-- EXPERIMENTO 3: MURAL COLECTIVO -->
+    <section id="mural-galeria" class="sec-card p-4 sm:p-5 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="p-1.5 rounded-lg bg-indigo-950/60 border border-indigo-800/60 text-indigo-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
           </div>
-
-          <div class="flex items-center gap-3">
-            <!-- AUTO-REFRESH TOGGLE -->
-            <label class="inline-flex items-center gap-1.5 text-[11px] font-mono text-gray-300 cursor-pointer">
-              <input type="checkbox" id="auto-refresh-check" checked class="rounded accent-cyan-400">
-              <span>Auto-actualizar (6s)</span>
-            </label>
-            <button onclick="loadPhotos(true)" class="p-2 rounded-lg bg-slate-950 border border-gray-700 text-xs text-cyan-300 hover:border-cyan-400 transition" title="Actualizar ahora">
-              🔄
-            </button>
+          <div>
+            <h2 class="text-sm font-semibold text-white tracking-wide flex items-center gap-2">
+              <span>Muro de Evidencias en Vivo</span>
+              <span id="photo-counter-badge" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">
+                0 objetos
+              </span>
+            </h2>
+            <p class="text-[11px] font-mono text-slate-400">Objetos subidos al bucket de Amazon S3 durante la sesión</p>
           </div>
         </div>
 
-        <!-- REJILLA DE FOTOS -->
-        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-3 pt-4">
-          <div class="p-8 col-span-full text-center text-xs text-gray-500 font-mono">
-            ⏳ Cargando fotos del mural en Amazon S3...
-          </div>
+        <div class="flex items-center gap-3">
+          <label class="inline-flex items-center gap-1.5 text-xs font-mono text-slate-400 cursor-pointer">
+            <input type="checkbox" id="auto-refresh-check" checked class="rounded accent-sky-500">
+            <span>Sincronizar (6s)</span>
+          </label>
+          <button onclick="loadPhotos(true)" class="p-1.5 rounded bg-slate-950 border border-slate-700 text-slate-300 hover:text-white transition" title="Actualizar">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+        <div class="p-8 col-span-full text-center text-xs text-slate-500 font-mono">
+          Esperando objetos en el bucket de Amazon S3...
         </div>
       </div>
     </section>
 
   </main>
 
-
-  <!-- MODAL PARA VER FOTO EN ALTA RESOLUCIÓN Y DETALLES IAM -->
-  <div id="photo-modal" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4" onclick="closePhotoModal(event)">
-    <div class="sec-card max-w-lg w-full p-4 sm:p-5 space-y-3 relative border-cyan-400/60" onclick="event.stopPropagation()">
-      <button onclick="closePhotoModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white font-mono text-lg p-1">✕</button>
+  <!-- MODAL DE INSPECCIÓN -->
+  <div id="photo-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closePhotoModal(event)">
+    <div class="sec-card max-w-lg w-full p-4 sm:p-5 space-y-3 relative border-slate-700" onclick="event.stopPropagation()">
+      <button onclick="closePhotoModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white font-mono text-sm p-1">✕</button>
       
-      <div class="rounded-xl overflow-hidden border border-gray-800 bg-black">
-        <img id="modal-img" class="w-full max-h-[60vh] object-contain mx-auto">
+      <div class="rounded-lg overflow-hidden border border-slate-800 bg-black">
+        <img id="modal-img" class="w-full max-h-[55vh] object-contain mx-auto">
       </div>
 
       <div class="space-y-1.5 pt-1">
         <div class="flex items-center justify-between">
-          <div id="modal-author" class="font-mono font-bold text-white text-sm"></div>
-          <div id="modal-date" class="text-[10px] font-mono text-gray-400"></div>
+          <div id="modal-author" class="font-mono font-semibold text-white text-sm"></div>
+          <div id="modal-date" class="text-[11px] font-mono text-slate-400"></div>
         </div>
         
-        <div class="bg-slate-950 p-2.5 rounded-lg border border-gray-800 text-[10px] font-mono text-gray-300 space-y-1">
-          <div class="flex justify-between"><span class="text-gray-500">IAM Role:</span> <span class="text-cyan-300">SecurityDemoRole-EC2</span></div>
-          <div class="flex justify-between"><span class="text-gray-500">Storage:</span> <span class="text-emerald-300">Amazon S3 Standard (SSE-S3)</span></div>
-          <div class="flex justify-between"><span class="text-gray-500">S3 Key:</span> <span id="modal-key" class="text-amber-300 truncate max-w-[200px]"></span></div>
+        <div class="bg-slate-950 p-2.5 rounded border border-slate-800 text-[10px] font-mono text-slate-300 space-y-1">
+          <div class="flex justify-between"><span class="text-slate-500">IAM Role:</span> <span class="text-sky-300">EC2PhotoWallRole</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Almacenamiento:</span> <span class="text-emerald-300">Amazon S3 Standard (SSE-S3)</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">S3 Key:</span> <span id="modal-key" class="text-slate-300 truncate max-w-[220px]"></span></div>
         </div>
       </div>
 
       <div class="flex gap-2 pt-1">
-        <a id="modal-download" target="_blank" download class="flex-1 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono font-bold text-xs text-center transition">
-          📥 Descargar Foto
+        <a id="modal-download" target="_blank" download class="flex-1 py-2 rounded bg-sky-600 hover:bg-sky-500 text-white font-mono font-medium text-xs text-center transition">
+          Descargar Archivo
         </a>
-        <button onclick="closePhotoModal()" class="px-4 py-2.5 rounded-lg bg-slate-900 border border-gray-700 text-gray-300 font-mono text-xs hover:text-white transition">
+        <button onclick="closePhotoModal()" class="px-4 py-2 rounded bg-slate-900 border border-slate-700 text-slate-300 font-mono text-xs hover:text-white transition">
           Cerrar
         </button>
       </div>
     </div>
   </div>
 
-
-  <!-- PIE DE PÁGINA: ROBERTO FLORES & COMUNIDADES -->
-  <footer class="mt-8 pt-6 border-t border-gray-800/80 space-y-4 text-center">
-    <div class="sec-card p-4 sm:p-5 space-y-3 text-left border-cyan-500/20 bg-slate-950/80">
+  <!-- PIE DE PÁGINA: PROYECTO OPEN SOURCE -->
+  <footer class="mt-8 pt-6 border-t border-slate-800/80 space-y-4 text-center">
+    <div class="sec-card p-4 sm:p-5 space-y-3 text-left border-slate-800 bg-slate-950/60">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2.5">
-          <span class="text-xl">🎙️</span>
-          <div>
-            <div class="text-sm font-bold text-white font-mono">Roberto Flores Segundo</div>
-            <div class="text-[11px] text-cyan-400 font-mono">Founder & Leader AWS UG Playa Vicente · Becario AWS All Builders Welcome</div>
-          </div>
+        <div>
+          <div class="text-sm font-bold text-white font-mono">AWS Cloud Security Lab</div>
+          <div class="text-xs text-slate-400 font-mono">Hands-on Cloud Security & Compliance Educational Framework</div>
         </div>
-        <span class="px-2.5 py-1 rounded text-[10px] font-mono font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300">
-          漂泊者 · Vagabundo de la Nube
+        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-800 text-slate-300 border border-slate-700">
+          Open Source · Licencia MIT
         </span>
       </div>
 
-      <p class="text-xs text-gray-300 italic border-l-2 border-amber-400/70 pl-3 my-2 font-mono leading-relaxed">
-        «En cualquier comunidad o reto de la vida, si alguien me pregunta quién soy, siempre diré lo mismo: solo soy un vagabundo que va pasando por aquí para aprender, compartir y sumar con ustedes.»
+      <p class="text-xs text-slate-400 italic border-l-2 border-slate-700 pl-3 my-1 font-mono leading-relaxed">
+        «Diseñado para enseñar seguridad en la nube desde la práctica real: detección de puntos ciegos en IAM, Security Groups vs NACLs, URLs prefirmadas en S3 y trazabilidad forense con CloudTrail.»
       </p>
 
-      <div class="text-[10px] text-gray-400 font-mono flex flex-wrap gap-x-4 gap-y-1 pt-2 border-t border-gray-800/80">
-        <span>🤜🤛 Choque de puños & comunidad</span>
-        <span>☕ Charlas técnicas abiertas</span>
-        <span>🚀 Aprender construyendo (Builders)</span>
+      <div class="text-[11px] text-slate-500 font-mono flex flex-wrap gap-x-4 gap-y-1 pt-2 border-t border-slate-800/80">
+        <span>Laboratorio 100% Replicable</span>
+        <span>·</span>
+        <span>Compatible con Free Tier ($0 USD)</span>
+        <span>·</span>
+        <span>Infraestructura como Código (AWS CDK)</span>
       </div>
     </div>
 
-    <!-- ENLACES DE COMUNIDAD Y MATERIALES -->
-    <div class="space-y-2 pt-1">
-      <div class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider">
-        Materiales de la Charla y Enlaces de Comunidad
-      </div>
-      <div class="flex flex-wrap gap-2.5 justify-center pt-0.5">
-        <a href="{MIXTLE_DRIVE_URL}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs bg-pink-950/50 border border-pink-400/50 text-pink-300 hover:bg-pink-900/80 transition font-mono shadow-md active:scale-95">
-          <span>📁</span> Reto Mixtle (Google Drive)
-        </a>
-        <a href="{SPEAKER_MEETUP_URL}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs bg-amber-950/50 border border-amber-500/40 text-amber-300 hover:bg-amber-900/80 transition font-mono shadow-md active:scale-95">
-          <span>🌴</span> AWS UG Playa Vicente
-        </a>
-        <a href="{UNAM_MEETUP_URL}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl font-bold text-xs bg-cyan-950/60 border border-cyan-400/50 text-cyan-300 hover:bg-cyan-900/80 transition font-mono shadow-md active:scale-95">
-          <span>🎓</span> Meetup AWS SBG
-        </a>
-      </div>
+    <!-- ENLACES DE RECURSOS TÉCNICOS -->
+    <div class="flex flex-wrap gap-2.5 justify-center pt-1">
+      <a href="{REPO_URL}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 transition">
+        <svg class="w-3.5 h-3.5 text-sky-400" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        <span>Código Fuente en GitHub</span>
+      </a>
+      <a href="{DOCS_URL}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 transition">
+        <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0-4a1 1 0 01-2 0V7a1 1 0 012 0z"/></svg>
+        <span>AWS Security Documentation</span>
+      </a>
     </div>
   </footer>
 
@@ -871,12 +815,12 @@ class PhotoWallHandler(http.server.SimpleHTTPRequestHandler):
               '<div><b>💡 Explicación Técnica:</b> ' + data.explanation + '</div>' +
               '<div><b>Parámetros de Seguridad:</b> <span class="text-cyan-300">X-Amz-Expires=900</span> · <span class="text-amber-300">X-Amz-Signature</span></div>' +
             '</div>' +
-            '<div class="pt-1"><a href="' + data.url + '" target="_blank" download class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs transition">📥 Descargar Guía de Becas AWS (PDF)</a></div>';
+            '<div class="pt-1"><a href="' + data.url + '" target="_blank" download class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs transition">📥 Descargar Rutas de Certificación AWS (PDF)</a></div>';
           
           // Disparo automático de descarga
           const link = document.createElement('a');
           link.href = data.url;
-          link.download = 'Guia_Oportunidades_Becas_AWS_2026.pdf';
+          link.download = 'AWS_certification_paths.pdf';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);

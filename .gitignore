@@ -38,12 +38,23 @@ Thumbs.db
 *.swp
 *~
 
-# Material de trabajo personal, presentaciones y notas internas
+# Material de trabajo personal, presentaciones, charlas y eventos
 presentacion/
 eventos/
 flujodetrabajo/
+awscommunitydayperu/
+.agents/
+evidenicas/
+evidencias/
 ARQUITECTURA_Y_ROADMAP.md
-*.pdf
-*.pptx
-cdk/assets/docs/
+FILOSOFIA_Y_NARRATIVA.md
+CodigoDeConducta*.pdf
+Guia_Oportunidades*.pdf
 scripts/generar_guia_oportunidades_pdf.py
+cdk/assets/docs/
+*.mp4
+!videos/*.mp4
+*.mkv
+*.pptx
+*.pdf
+!cdk/assets/sample-docs/*.pdf
