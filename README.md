@@ -14,6 +14,8 @@ Laboratorio práctico desarrollado con **AWS CDK (TypeScript)** y Python para de
 
 Diseñado para desarrolladores, auditores de seguridad, estudiantes y arquitectos de soluciones que buscan experimentar con políticas de seguridad en la práctica real.
 
+> **Diapositivas de la charla:** Puedes descargar la presentación en PDF utilizada en el AWS Community Day Perú 2026: [`AWSCommunityDayPeru2026_RobertoFlores.pdf`](AWSCommunityDayPeru2026_RobertoFlores.pdf).
+
 ---
 
 ## Arquitectura del Laboratorio
@@ -189,6 +191,7 @@ aws-cloud-security-lab/
 │   ├── 07_vpc_nacl_bloqueo_ip_especifica_deny.mp4
 │   └── 08_purga_total_destruccion_cloudformation_cero_costo.mp4
 │
+├── AWSCommunityDayPeru2026_RobertoFlores.pdf # Diapositivas oficiales de la charla
 └── README.md                           # Documentación técnica completa
 ```
 

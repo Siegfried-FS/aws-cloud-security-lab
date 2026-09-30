@@ -58,3 +58,4 @@ cdk/assets/docs/
 *.pptx
 *.pdf
 !cdk/assets/sample-docs/*.pdf
+!AWSCommunityDayPeru2026_RobertoFlores.pdf
